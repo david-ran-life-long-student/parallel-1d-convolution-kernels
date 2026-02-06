@@ -6,6 +6,8 @@
 
 #include "conv_1d.h"
 
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+
 #define DEFAULT_LEAF_SIZE 1024
 
 // some utils
@@ -69,6 +71,22 @@ void conv_1d_loop_shift(float* a, float* b, float* c, int n) {
     for (int i = 0; i < n; ++i)
         for (int j = 0; j <= i; ++j)
             c[i + j] += a[i] * b[j];
+}
+
+void conv_1d_loop_shift_tiled(float* a, float* b, float* c, int n) {
+    vec_zero(c, 2 * n - 1);
+    
+    // tile loops we parallelize this with reduction
+    for (int tile_i_base = 0; i_tile + DEFAULT_LEAF_SIZE < n; i_tile += DEFAULT_LEAF_SIZE)
+        for (int tile_j_base = 0; j_tile + DEFAULT_LEAF_SIZE < n; j_tile += DEFAULT_LEAF_SIZE) {
+            // within one tile 
+            int tile_i_bound = MIN(tile_i_base + DEFAULT_LEAF_SIZE, n);
+            int tile_j_bound = MIN(tile_j_base + DEFAULT_LEAF_SIZE, n);
+            for (int i = i_tile_base; i < tile_i_bound; ++i)  // can we vectorize the outer loop here
+                for (int j = j_tile_base; j < tile_j_bound; ++j)
+                    c[i + j] += a[i] * b[j];
+        }
+            
 }
 
 void conv_1d_karatsuba_recursive(float* a, float* b, float* c, float* temp, long len, const long leaf_threshold) {
