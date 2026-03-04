@@ -76,11 +76,8 @@ void conv_1d_naive(float* a, float* b, float* c, int len) {
 void conv_1d_loop_shift(float* a, float* b, float* c, int len) {
     vec_zero(c, len * 2 - 1);
 
-    // option 1:
     // parallelize outer loop (has conflict on output, must use reduction)
     // simd on the inner loop
-    // option 2:
-    // parallelize entire iteraion space (reduction on output too)
     #pragma omp parallel for reduction(+:c[:len*2])
     for (int i = 0; i < len; ++i)
         #pragma omp simd

@@ -1,4 +1,4 @@
-CC = gcc
+CC = clang
 FLAGS = -O2 -Wextra
 
 conv-omp: dir-structure src/conv_1d.c
